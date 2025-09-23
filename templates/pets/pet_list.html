@@ -1,0 +1,252 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Buscar Pets - Meu Novo Amigo Pet{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold">
+                <i class="fas fa-search me-2"></i>Buscar Pets
+            </h1>
+            <p class="text-muted">Encontre o pet ideal para sua família</p>
+        </div>
+    </div>
+    
+    <!-- Search Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="{{ form.especie.id_for_label }}" class="form-label">Espécie</label>
+                            {{ form.especie }}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="{{ form.porte.id_for_label }}" class="form-label">Porte</label>
+                            {{ form.porte }}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="{{ form.sexo.id_for_label }}" class="form-label">Sexo</label>
+                            {{ form.sexo }}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="{{ form.idade.id_for_label }}" class="form-label">Idade</label>
+                            {{ form.idade }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.cidade.id_for_label }}" class="form-label">Cidade</label>
+                            {{ form.cidade }}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="{{ form.estado.id_for_label }}" class="form-label">Estado</label>
+                            {{ form.estado }}
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check mt-4">
+                                {{ form.apenas_verificados }}
+                                <label class="form-check-label" for="{{ form.apenas_verificados.id_for_label }}">
+                                    Apenas verificados
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100 mt-4">
+                                <i class="fas fa-search me-1"></i>Buscar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="row">
+        <div class="col-12">
+            {% if pets %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">{{ pets|length }} pet{{ pets|length|pluralize }} encontrado{{ pets|length|pluralize }}</h5>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary active" id="gridView">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="listView">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Grid View -->
+            <div id="gridContainer" class="row">
+                {% for pet in pets %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        {% if pet.fotos.first %}
+                        <img src="{{ pet.fotos.first.imagem.url }}" class="card-img-top" alt="{{ pet.nome }}" style="height: 250px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <i class="fas fa-paw fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">{{ pet.nome }}</h5>
+                                {% if pet.doador.verificado %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i>Verificado
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-2">
+                                <span class="badge bg-primary me-1">{{ pet.especie }}</span>
+                                <span class="badge bg-secondary me-1">{{ pet.porte }}</span>
+                                <span class="badge bg-info">{{ pet.sexo }}</span>
+                            </div>
+                            
+                            <p class="card-text text-muted small mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ pet.cidade }}/{{ pet.estado }}
+                            </p>
+                            
+                            <p class="card-text text-muted small mb-3">
+                                <i class="fas fa-birthday-cake me-1"></i>{{ pet.get_idade_formatada }}
+                            </p>
+                            
+                            <p class="card-text flex-grow-1">{{ pet.descricao|truncatechars:100 }}</p>
+                            
+                            <div class="mt-auto">
+                                <a href="{% url 'pets:pet_detail' pet.pk %}" class="btn btn-primary w-100">
+                                    <i class="fas fa-eye me-1"></i>Ver Detalhes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- List View -->
+            <div id="listContainer" class="d-none">
+                {% for pet in pets %}
+                <div class="card mb-3">
+                    <div class="row g-0">
+                        <div class="col-md-3">
+                            {% if pet.fotos.first %}
+                            <img src="{{ pet.fotos.first.imagem.url }}" class="img-fluid rounded-start h-100" alt="{{ pet.nome }}" style="object-fit: cover;">
+                            {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                                <i class="fas fa-paw fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">{{ pet.nome }}</h5>
+                                    {% if pet.doador.verificado %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>Verificado
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <span class="badge bg-primary me-1">{{ pet.especie }}</span>
+                                    <span class="badge bg-secondary me-1">{{ pet.porte }}</span>
+                                    <span class="badge bg-info me-1">{{ pet.sexo }}</span>
+                                    <span class="badge bg-warning">{{ pet.get_idade_formatada }}</span>
+                                </div>
+                                
+                                <p class="card-text text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ pet.cidade }}/{{ pet.estado }}
+                                </p>
+                                
+                                <p class="card-text">{{ pet.descricao|truncatechars:200 }}</p>
+                                
+                                <a href="{% url 'pets:pet_detail' pet.pk %}" class="btn btn-primary">
+                                    <i class="fas fa-eye me-1"></i>Ver Detalhes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.especie %}&especie={{ request.GET.especie }}{% endif %}{% if request.GET.porte %}&porte={{ request.GET.porte }}{% endif %}{% if request.GET.sexo %}&sexo={{ request.GET.sexo }}{% endif %}{% if request.GET.idade %}&idade={{ request.GET.idade }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.apenas_verificados %}&apenas_verificados=on{% endif %}">Primeira</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.especie %}&especie={{ request.GET.especie }}{% endif %}{% if request.GET.porte %}&porte={{ request.GET.porte }}{% endif %}{% if request.GET.sexo %}&sexo={{ request.GET.sexo }}{% endif %}{% if request.GET.idade %}&idade={{ request.GET.idade }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.apenas_verificados %}&apenas_verificados=on{% endif %}">Anterior</a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.especie %}&especie={{ request.GET.especie }}{% endif %}{% if request.GET.porte %}&porte={{ request.GET.porte }}{% endif %}{% if request.GET.sexo %}&sexo={{ request.GET.sexo }}{% endif %}{% if request.GET.idade %}&idade={{ request.GET.idade }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.apenas_verificados %}&apenas_verificados=on{% endif %}">Próxima</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.especie %}&especie={{ request.GET.especie }}{% endif %}{% if request.GET.porte %}&porte={{ request.GET.porte }}{% endif %}{% if request.GET.sexo %}&sexo={{ request.GET.sexo }}{% endif %}{% if request.GET.idade %}&idade={{ request.GET.idade }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.apenas_verificados %}&apenas_verificados=on{% endif %}">Última</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Nenhum pet encontrado</h4>
+                <p class="text-muted">Tente ajustar os filtros de busca ou cadastre um novo pet.</p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'pets:pet_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Cadastrar Pet
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const gridView = document.getElementById('gridView');
+    const listView = document.getElementById('listView');
+    const gridContainer = document.getElementById('gridContainer');
+    const listContainer = document.getElementById('listContainer');
+    
+    gridView.addEventListener('click', function() {
+        gridView.classList.add('active');
+        listView.classList.remove('active');
+        gridContainer.classList.remove('d-none');
+        listContainer.classList.add('d-none');
+    });
+    
+    listView.addEventListener('click', function() {
+        listView.classList.add('active');
+        gridView.classList.remove('active');
+        listContainer.classList.remove('d-none');
+        gridContainer.classList.add('d-none');
+    });
+});
+</script>
+{% endblock %}

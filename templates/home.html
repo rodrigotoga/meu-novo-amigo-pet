@@ -1,0 +1,233 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Meu Novo Amigo Pet - Conectando amor e cuidado{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    Encontre seu novo melhor amigo! 🐾
+                </h1>
+                <p class="lead mb-4">
+                    Conectamos animais que precisam de um lar a pessoas dispostas a oferecer amor, 
+                    cuidado e uma segunda chance. Faça parte dessa história de amor!
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'pets:pet_list' %}" class="btn btn-light btn-lg">
+                        <i class="fas fa-search me-2"></i>Buscar Pets
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'pets:pet_create' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-plus me-2"></i>Anunciar Pet
+                    </a>
+                    {% else %}
+                    <a href="{% url 'accounts:register' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Cadastrar-se
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="{% static 'images/hero-pets.png' %}" alt="Pets felizes" class="img-fluid" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <i class="fas fa-paw fa-3x text-primary mb-3"></i>
+                        <h3 class="fw-bold">{{ stats.total_pets }}</h3>
+                        <p class="text-muted">Pets Cadastrados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <i class="fas fa-heart fa-3x text-danger mb-3"></i>
+                        <h3 class="fw-bold">{{ stats.pets_disponiveis }}</h3>
+                        <p class="text-muted">Pets Disponíveis</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-3x text-success mb-3"></i>
+                        <h3 class="fw-bold">{{ stats.total_usuarios }}</h3>
+                        <p class="text-muted">Usuários Cadastrados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Pets Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="fw-bold">Pets em Destaque</h2>
+                <p class="text-muted">Conheça alguns dos nossos amigos que estão procurando um lar</p>
+            </div>
+        </div>
+        
+        {% if pets_destaque %}
+        <div class="row">
+            {% for pet in pets_destaque %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if pet.fotos.first %}
+                    <img src="{{ pet.fotos.first.imagem.url }}" class="card-img-top" alt="{{ pet.nome }}" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-paw fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">{{ pet.nome }}</h5>
+                            {% if pet.doador.verificado %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i>Verificado
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-2">
+                            <span class="badge bg-primary me-1">{{ pet.especie }}</span>
+                            <span class="badge bg-secondary me-1">{{ pet.porte }}</span>
+                            <span class="badge bg-info">{{ pet.sexo }}</span>
+                        </div>
+                        
+                        <p class="card-text text-muted small mb-2">
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ pet.cidade }}/{{ pet.estado }}
+                        </p>
+                        
+                        <p class="card-text text-muted small mb-3">
+                            <i class="fas fa-birthday-cake me-1"></i>{{ pet.get_idade_formatada }}
+                        </p>
+                        
+                        <p class="card-text flex-grow-1">{{ pet.descricao|truncatechars:100 }}</p>
+                        
+                        <div class="mt-auto">
+                            <a href="{% url 'pets:pet_detail' pet.pk %}" class="btn btn-primary w-100">
+                                <i class="fas fa-eye me-1"></i>Ver Detalhes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'pets:pet_list' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-search me-2"></i>Ver Todos os Pets
+            </a>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-paw fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Nenhum pet em destaque no momento</h4>
+            <p class="text-muted">Que tal ser o primeiro a cadastrar um pet?</p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'pets:pet_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Cadastrar Pet
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- How it Works Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="fw-bold">Como Funciona</h2>
+                <p class="text-muted">É simples e seguro encontrar ou doar um pet</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                    <h5>1. Busque</h5>
+                    <p class="text-muted">Encontre o pet ideal usando nossos filtros de busca</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-heart fa-2x"></i>
+                    </div>
+                    <h5>2. Candidature-se</h5>
+                    <p class="text-muted">Preencha o formulário de candidatura para adotar</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-home fa-2x"></i>
+                    </div>
+                    <h5>3. Adote</h5>
+                    <p class="text-muted">Conheça o pet e leve seu novo amigo para casa</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Chat IA Section -->
+{% if user.is_authenticated %}
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-4">
+                    <i class="fas fa-robot text-primary me-2"></i>
+                    Assistente Virtual
+                </h2>
+                <p class="lead mb-4">
+                    Nosso assistente virtual está aqui para ajudá-lo! Tire dúvidas sobre adoção, 
+                    receba sugestões de pets compatíveis com seu perfil e muito mais.
+                </p>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Sugestões personalizadas de pets</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Orientações sobre adoção</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Dicas de cuidados com pets</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Suporte técnico</li>
+                </ul>
+                <a href="{% url 'chat_ai:chat' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-comments me-2"></i>Conversar com IA
+                </a>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="bg-light rounded p-4">
+                    <i class="fas fa-robot fa-5x text-primary mb-3"></i>
+                    <h5>Pronto para ajudar!</h5>
+                    <p class="text-muted">Clique no botão ao lado para começar a conversar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

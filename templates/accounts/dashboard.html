@@ -1,0 +1,276 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Meu Novo Amigo Pet{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </h1>
+                    <p class="text-muted">Bem-vindo, {{ user.nome }}!</p>
+                </div>
+                <div>
+                    <a href="{% url 'pets:pet_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Cadastrar Pet
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ stats.total }}</h4>
+                            <p class="mb-0">Pets Cadastrados</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-paw fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ stats.aprovados }}</h4>
+                            <p class="mb-0">Aprovados</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ stats.pendentes }}</h4>
+                            <p class="mb-0">Pendentes</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ stats.candidaturas_enviadas }}</h4>
+                            <p class="mb-0">Candidaturas</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-heart fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Pets Recentes -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-paw me-2"></i>Meus Pets
+                    </h5>
+                    <a href="{% url 'pets:meus_pets' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Todos
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if pets_recentes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Pet</th>
+                                    <th>Espécie</th>
+                                    <th>Status Anúncio</th>
+                                    <th>Status Adoção</th>
+                                    <th>Data</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pet in pets_recentes %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if pet.fotos.first %}
+                                            <img src="{{ pet.fotos.first.imagem.url }}" 
+                                                 class="rounded me-2" 
+                                                 style="width: 40px; height: 40px; object-fit: cover;"
+                                                 alt="{{ pet.nome }}">
+                                            {% else %}
+                                            <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="fas fa-paw text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ pet.nome }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ pet.cidade }}/{{ pet.estado }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ pet.especie }}</span>
+                                    </td>
+                                    <td>
+                                        {% if pet.status_anuncio == 'Aprovado' %}
+                                        <span class="badge bg-success">{{ pet.get_status_anuncio_display }}</span>
+                                        {% elif pet.status_anuncio == 'Pendente' %}
+                                        <span class="badge bg-warning">{{ pet.get_status_anuncio_display }}</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">{{ pet.get_status_anuncio_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if pet.status_adocao == 'Disponível' %}
+                                        <span class="badge bg-success">{{ pet.get_status_adocao_display }}</span>
+                                        {% elif pet.status_adocao == 'Em Processo' %}
+                                        <span class="badge bg-warning">{{ pet.get_status_adocao_display }}</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ pet.get_status_adocao_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ pet.data_cadastro|date:"d/m/Y" }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'pets:pet_detail' pet.pk %}" 
+                                               class="btn btn-outline-primary" 
+                                               title="Ver detalhes">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'pets:pet_update' pet.pk %}" 
+                                               class="btn btn-outline-secondary" 
+                                               title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-paw fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Nenhum pet cadastrado</h5>
+                        <p class="text-muted">Que tal cadastrar seu primeiro pet?</p>
+                        <a href="{% url 'pets:pet_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Cadastrar Pet
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Candidaturas Recebidas -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heart me-2"></i>Candidaturas Recebidas
+                    </h5>
+                    {% if candidaturas_recebidas %}
+                    <a href="{% url 'pets:candidaturas_recebidas' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Todas
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if candidaturas_recebidas %}
+                    {% for candidatura in candidaturas_recebidas %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <strong>{{ candidatura.pet.nome }}</strong>
+                            <small class="text-muted">{{ candidatura.data_envio|date:"d/m" }}</small>
+                        </div>
+                        <p class="mb-1">
+                            <small class="text-muted">Candidato:</small> {{ candidatura.candidato.nome }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            {% if candidatura.status == 'Enviada' %}
+                            <span class="badge bg-warning">{{ candidatura.get_status_display }}</span>
+                            {% elif candidatura.status == 'Visualizada' %}
+                            <span class="badge bg-info">{{ candidatura.get_status_display }}</span>
+                            {% else %}
+                            <span class="badge bg-success">{{ candidatura.get_status_display }}</span>
+                            {% endif %}
+                            <a href="{% url 'pets:candidatura_detail' candidatura.id %}" 
+                               class="btn btn-sm btn-outline-primary">
+                                Ver
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">Nenhuma candidatura</h6>
+                        <p class="text-muted small">Candidaturas aparecerão aqui quando você receber.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Ações Rápidas -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Ações Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'pets:pet_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Cadastrar Pet
+                        </a>
+                        <a href="{% url 'pets:pet_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Buscar Pets
+                        </a>
+                        <a href="{% url 'chat_ai:chat' %}" class="btn btn-outline-info">
+                            <i class="fas fa-robot me-2"></i>Chat com IA
+                        </a>
+                        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-user-edit me-2"></i>Editar Perfil
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

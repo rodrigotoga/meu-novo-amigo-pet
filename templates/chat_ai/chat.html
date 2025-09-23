@@ -1,0 +1,364 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chat com IA - Meu Novo Amigo Pet{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-container {
+    height: 600px;
+    border: 1px solid #dee2e6;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.chat-messages {
+    height: 500px;
+    overflow-y: auto;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.chat-input {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem;
+    background-color: white;
+}
+
+.message {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.message.user {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 5px;
+}
+
+.message.bot {
+    background-color: white;
+    color: #343a40;
+    border: 1px solid #dee2e6;
+    border-bottom-left-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.typing-indicator {
+    display: none;
+    padding: 0.75rem 1rem;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 15px;
+    border-bottom-left-radius: 5px;
+    max-width: 80px;
+    margin-bottom: 1rem;
+}
+
+.typing-indicator .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    margin: 0 2px;
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.quick-action {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quick-action:hover {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="fw-bold">
+                    <i class="fas fa-robot text-primary me-2"></i>Chat com IA
+                </h1>
+                <div>
+                    <a href="{% url 'chat_ai:historico' %}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-history me-1"></i>Histórico
+                    </a>
+                    <a href="{% url 'chat_ai:sugestoes_pets' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-paw me-1"></i>Sugestões
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Mensagem de boas-vindas -->
+                    <div class="message bot">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-robot text-primary me-2"></i>
+                            <strong>Assistente Virtual</strong>
+                        </div>
+                        <p class="mb-0">Olá! 😊 Sou o assistente virtual da plataforma Meu Novo Amigo Pet. Como posso ajudá-lo hoje?</p>
+                    </div>
+                    
+                    <!-- Ações rápidas -->
+                    <div class="quick-actions">
+                        <div class="quick-action" onclick="sendQuickMessage('Quero adotar um pet')">
+                            🐾 Quero adotar um pet
+                        </div>
+                        <div class="quick-action" onclick="sendQuickMessage('Como funciona a adoção?')">
+                            ❓ Como funciona a adoção?
+                        </div>
+                        <div class="quick-action" onclick="sendQuickMessage('Dicas de cuidados com pets')">
+                            💡 Dicas de cuidados
+                        </div>
+                        <div class="quick-action" onclick="sendQuickMessage('Sugestões de pets para mim')">
+                            🎯 Sugestões para mim
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <form id="chatForm" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="text" id="messageInput" class="form-control" placeholder="Digite sua mensagem..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary" id="sendButton">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Como posso ajudar?
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6><i class="fas fa-search text-primary me-2"></i>Busca de Pets</h6>
+                        <p class="small text-muted">Posso sugerir pets compatíveis com seu perfil e preferências.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-question-circle text-info me-2"></i>Dúvidas sobre Adoção</h6>
+                        <p class="small text-muted">Tire suas dúvidas sobre o processo de adoção e documentação.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-heart text-danger me-2"></i>Cuidados com Pets</h6>
+                        <p class="small text-muted">Receba dicas sobre alimentação, saúde e bem-estar dos pets.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-cog text-secondary me-2"></i>Suporte Técnico</h6>
+                        <p class="small text-muted">Ajuda com problemas na plataforma e navegação.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Dicas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <small>Seja específico sobre suas preferências</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <small>Mencione seu estilo de vida</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <small>Pergunte sobre cuidados específicos</small>
+                        </li>
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            <small>Use as ações rápidas para começar</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Indicador de digitação -->
+<div class="typing-indicator" id="typingIndicator">
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+    const chatMessages = document.getElementById('chatMessages');
+    const sendButton = document.getElementById('sendButton');
+    const typingIndicator = document.getElementById('typingIndicator');
+    
+    let sessionId = 'session_' + Date.now();
+    
+    // Enviar mensagem
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (message) {
+            sendMessage(message);
+            messageInput.value = '';
+        }
+    });
+    
+    // Enviar mensagem rápida
+    window.sendQuickMessage = function(message) {
+        messageInput.value = message;
+        sendMessage(message);
+    };
+    
+    function sendMessage(message) {
+        // Adicionar mensagem do usuário
+        addMessage(message, 'user');
+        
+        // Mostrar indicador de digitação
+        showTypingIndicator();
+        
+        // Desabilitar botão
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        // Enviar para API
+        fetch('{% url "chat_ai:chat_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                mensagem: message,
+                contexto: 'InformacaoGeral',
+                sessao_id: sessionId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideTypingIndicator();
+            
+            if (data.success) {
+                addMessage(data.resposta, 'bot');
+            } else {
+                addMessage('Desculpe, ocorreu um erro. Tente novamente.', 'bot');
+            }
+        })
+        .catch(error => {
+            hideTypingIndicator();
+            addMessage('Desculpe, ocorreu um erro de conexão. Tente novamente.', 'bot');
+        })
+        .finally(() => {
+            sendButton.disabled = false;
+            sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        });
+    }
+    
+    function addMessage(text, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        
+        if (type === 'bot') {
+            messageDiv.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-robot text-primary me-2"></i>
+                    <strong>Assistente Virtual</strong>
+                </div>
+                <div>${text.replace(/\n/g, '<br>')}</div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-user text-white me-2"></i>
+                    <strong>Você</strong>
+                </div>
+                <div>${text}</div>
+            `;
+        }
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function showTypingIndicator() {
+        typingIndicator.style.display = 'block';
+        chatMessages.appendChild(typingIndicator);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function hideTypingIndicator() {
+        typingIndicator.style.display = 'none';
+        if (typingIndicator.parentNode) {
+            typingIndicator.parentNode.removeChild(typingIndicator);
+        }
+    }
+    
+    // Focar no input
+    messageInput.focus();
+});
+</script>
+{% endblock %}
+
