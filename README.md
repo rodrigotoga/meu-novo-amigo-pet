@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🐾 Meu Novo Amigo Pet
 
 Uma plataforma web completa para conectar animais que precisam de um lar a pessoas dispostas a oferecer amor, cuidado e uma segunda chance.
@@ -212,3 +213,7 @@ Para dúvidas ou suporte:
 ---
 
 **Feito com ❤️ para conectar amor e cuidado aos nossos amigos de quatro patas! 🐾**
+=======
+# meu-novo-amigo-pet
+Sistema para aula
+>>>>>>> 0b00113904fffc802e6ed8c588dcb75338e15c75
