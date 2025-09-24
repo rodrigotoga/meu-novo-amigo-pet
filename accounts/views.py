@@ -18,12 +18,12 @@ class CustomLoginView(LoginView):
     redirect_authenticated_user = True
     
     def get_success_url(self):
-        return reverse_lazy('home')
+        return reverse_lazy('pets:home')
 
 
 class CustomLogoutView(LogoutView):
     """View customizada para logout"""
-    next_page = reverse_lazy('home')
+    next_page = reverse_lazy('pets:home')
 
 
 class UsuarioRegistrationView(CreateView):
@@ -34,12 +34,24 @@ class UsuarioRegistrationView(CreateView):
     success_url = reverse_lazy('accounts:login')
     
     def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(
-            self.request, 
-            'Conta criada com sucesso! Faça login para continuar.'
-        )
-        return response
+        print("DEBUG: form_valid chamado")
+        try:
+            response = super().form_valid(form)
+            print("DEBUG: usuário criado com sucesso")
+            messages.success(
+                self.request, 
+                'Conta criada com sucesso! Faça login para continuar.'
+            )
+            return response
+        except Exception as e:
+            print(f"DEBUG: Erro ao criar usuário: {e}")
+            messages.error(self.request, f'Erro ao criar conta: {e}')
+            return self.form_invalid(form)
+    
+    def form_invalid(self, form):
+        print("DEBUG: form_invalid chamado")
+        print(f"DEBUG: Erros do formulário: {form.errors}")
+        return super().form_invalid(form)
 
 
 @login_required

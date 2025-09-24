@@ -125,10 +125,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Loading states for buttons
     document.querySelectorAll('button[type="submit"]').forEach(button => {
-        button.addEventListener('click', function() {
-            if (this.form && this.form.checkValidity()) {
-                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
-                this.disabled = true;
+        button.addEventListener('click', function(e) {
+            const form = this.form;
+            if (form && form.checkValidity()) {
+                // Permitir que o formulário seja enviado primeiro
+                setTimeout(() => {
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
+                    this.disabled = true;
+                }, 100);
             }
         });
     });
