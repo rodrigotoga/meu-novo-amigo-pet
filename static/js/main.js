@@ -72,24 +72,28 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchForm) {
         const inputs = searchForm.querySelectorAll('input, select');
         inputs.forEach(input => {
-            input.addEventListener('change', function() {
-                // Auto-submit form when filters change
-                if (this.type !== 'text' || this.value.length >= 3) {
-                    searchForm.submit();
-                }
-            });
+            if (input) {
+                input.addEventListener('change', function() {
+                    // Auto-submit form when filters change
+                    if (this.type !== 'text' || this.value.length >= 3) {
+                        searchForm.submit();
+                    }
+                });
+            }
         });
     }
 
     // Pet card hover effects
     document.querySelectorAll('.pet-card').forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
+        if (card) {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        }
     });
 
     // Back to top button
@@ -125,50 +129,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Loading states for buttons
     document.querySelectorAll('button[type="submit"]').forEach(button => {
-        button.addEventListener('click', function(e) {
-            const form = this.form;
-            if (form && form.checkValidity()) {
-                // Permitir que o formulário seja enviado primeiro
-                setTimeout(() => {
-                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
-                    this.disabled = true;
-                }, 100);
-            }
-        });
+        if (button) {
+            button.addEventListener('click', function(e) {
+                const form = this.form;
+                if (form && form.checkValidity()) {
+                    // Permitir que o formulário seja enviado primeiro
+                    setTimeout(() => {
+                        this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
+                        this.disabled = true;
+                    }, 100);
+                }
+            });
+        }
     });
 
     // Confirmation dialogs
     document.querySelectorAll('[data-confirm]').forEach(element => {
-        element.addEventListener('click', function(e) {
-            const message = this.dataset.confirm || 'Tem certeza que deseja continuar?';
-            if (!confirm(message)) {
-                e.preventDefault();
-            }
-        });
+        if (element) {
+            element.addEventListener('click', function(e) {
+                const message = this.dataset.confirm || 'Tem certeza que deseja continuar?';
+                if (!confirm(message)) {
+                    e.preventDefault();
+                }
+            });
+        }
     });
 
     // Copy to clipboard functionality
     document.querySelectorAll('[data-copy]').forEach(button => {
-        button.addEventListener('click', function() {
-            const text = this.dataset.copy;
-            navigator.clipboard.writeText(text).then(() => {
-                const originalText = this.innerHTML;
-                this.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                setTimeout(() => {
-                    this.innerHTML = originalText;
-                }, 2000);
+        if (button) {
+            button.addEventListener('click', function() {
+                const text = this.dataset.copy;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                        }, 2000);
+                    });
+                }
             });
-        });
+        }
     });
 
     // Dynamic form fields
     document.querySelectorAll('[data-add-field]').forEach(button => {
-        button.addEventListener('click', function() {
-            const template = document.querySelector(this.dataset.addField);
-            const container = document.querySelector(this.dataset.target);
-            const clone = template.content.cloneNode(true);
-            container.appendChild(clone);
-        });
+        if (button) {
+            button.addEventListener('click', function() {
+                const template = document.querySelector(this.dataset.addField);
+                const container = document.querySelector(this.dataset.target);
+                if (template && container) {
+                    const clone = template.content.cloneNode(true);
+                    container.appendChild(clone);
+                }
+            });
+        }
     });
 
     // Remove dynamic form fields
@@ -180,33 +196,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // File upload preview
     document.querySelectorAll('input[type="file"]').forEach(input => {
-        input.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.querySelector(`[data-preview="${input.name}"]`);
-                    if (preview) {
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        if (input) {
+            input.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.querySelector(`[data-preview="${input.name}"]`);
+                        if (preview) {
+                            preview.src = e.target.result;
+                            preview.style.display = 'block';
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
     });
 
     // Search suggestions (if needed)
     const searchInputs = document.querySelectorAll('input[data-suggestions]');
     searchInputs.forEach(input => {
-        let timeout;
-        input.addEventListener('input', function() {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                // Implement search suggestions here
-                console.log('Searching for:', this.value);
-            }, 300);
-        });
+        if (input) {
+            let timeout;
+            input.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    // Implement search suggestions here
+                    console.log('Searching for:', this.value);
+                }, 300);
+            });
+        }
     });
 
     // Initialize animations
@@ -274,8 +294,10 @@ function formatPhoneNumber(input) {
 // Initialize phone formatting
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('input[type="tel"], input[name*="telefone"]').forEach(input => {
-        input.addEventListener('input', function() {
-            formatPhoneNumber(this);
-        });
+        if (input) {
+            input.addEventListener('input', function() {
+                formatPhoneNumber(this);
+            });
+        }
     });
 });
